@@ -19,7 +19,8 @@
   *  Routes:
   *     {Airline, Airline ID, Source airport, Source airport ID, Destination airport, Destination airport ID, Codeshare, Stops, Equipment}
   *         Important variables:
-  *             Airline(0), Airline ID(1), Source airport(2), destination airport(4), destination airport id(5)
+  * 
+  *            ---> Airline(0), Airline ID(1), Source airport(2), destination airport(4), destination airport id(5) <---
   * 
   * Airport:
   *     {Airport ID, Name(airport), City, Country, IATA, ICAO, Latitude, Longitude, Altitude, Timezone, DST, Tz database timezone, Type, Source}
@@ -41,28 +42,52 @@ async function retrieve() {
     const airportData = await fetch('https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat').then(data => data.text()).then(data => fileDataToArray(data));
     const routeData = await fetch('https://raw.githubusercontent.com/jpatokal/openflights/master/data/routes.dat').then(data => data.text()).then(data => fileDataToArray(data));
 
+    //Get start and dest airports
+    const sourceAirport = [];
+    const destAirport = [];
     routeData.forEach(route => {
-
-        //Check the source aiport towards our airport data
-            // Check longitude and latitude
-
             airportData.forEach(airport => {
                 if(airport[4] === `"${route[2]}"`) {
-                    console.log([airport[1], airport[6], airport[7]]);
-                    return [airport[1], airport[6], airport[7]];
+                    sourceAirport.push([airport[1], airport[6], airport[7]]);
                 }
             });
 
-        //Check destination airport towards our airport data
-            // Check longitude and latitude
-
-        //Return the 10 longest flights Airline, and Airline ID data.
-
+            airportData.forEach(airport => {
+                if(airport[4] === `"${route[4]}"`) {
+                    destAirport.push([airport[1], airport[6], airport[7]]);
+                }
+            });            
     })
 
-    /* airportData.forEach(airport => {
-        console.log(airport[4]);
-    }) */
+    const flights = [];
+    for (let i = 0; i < sourceAirport.length; i++) {
+        flights.push(
+            sourceAirport[i][0],
+            destAirport[i][0],
+            distanceInKmBetweenEarthCoordinates(sourceAirport[i][1], sourceAirport[i][2], destAirport[i][1],  destAirport[i][2])
+        );
+    };
+    
+
+}
+
+function degreesToRadians(degrees) {
+    return degrees * Math.PI / 180;
+  }
+  
+function distanceInKmBetweenEarthCoordinates(lat1, lon1, lat2, lon2) {
+    var earthRadiusKm = 6371;
+
+    var dLat = degreesToRadians(lat2-lat1);
+    var dLon = degreesToRadians(lon2-lon1);
+
+    lat1 = degreesToRadians(lat1);
+    lat2 = degreesToRadians(lat2);
+
+    var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+    return earthRadiusKm * c;
 }
 
 retrieve();
