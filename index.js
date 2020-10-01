@@ -56,19 +56,43 @@ async function retrieve() {
                 if(airport[4] === `"${route[4]}"`) {
                     destAirport.push([airport[1], airport[6], airport[7]]);
                 }
-            });            
+            });
+
+    //----- End of forEach Loop         
     })
 
     const flights = [];
-    for (let i = 0; i < sourceAirport.length; i++) {
-        flights.push(
+    const distances = [];
+    for (let i = 0; i < destAirport.length; i++) {
+        flights.push([
             sourceAirport[i][0],
             destAirport[i][0],
-            distanceInKmBetweenEarthCoordinates(sourceAirport[i][1], sourceAirport[i][2], destAirport[i][1],  destAirport[i][2])
+            distanceInKmBetweenEarthCoordinates(sourceAirport[i][1], sourceAirport[i][2], destAirport[i][1],  destAirport[i][2])]
         );
+        distances.push(flights[i][2]);
     };
-    
 
+    distances.sort((a, b) => b - a);
+    
+    const longestD = [];
+    for (let i = 0; i <= 9; i++) {
+        longestD.push(distances.shift());
+    }
+
+   let longestF = [];
+    
+    longestD.forEach(distance => {
+        flights.forEach(flight => {
+            if(flight[2] === distance) {
+                longestF.push(flight);
+            }
+        });
+    })
+
+    longestF.pop();
+    console.log(longestF);
+
+    //------ End of retrieve
 }
 
 function degreesToRadians(degrees) {
